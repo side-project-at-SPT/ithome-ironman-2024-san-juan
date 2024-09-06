@@ -38,7 +38,6 @@ jobs:
       - name: Generate UI assets for Swagger
         env:
           RAILS_ENV: test
-          # ADD_ZEABUR_SERVER: 1
         run: |
           bundle exec rake rswag:ui:copy_assets[public/api-docs]
           cp -r public/api-docs/* public/
@@ -46,7 +45,6 @@ jobs:
       - name: Generate Swagger YAML
         env:
           RAILS_ENV: test
-          # ADD_ZEABUR_SERVER: 1
           API_DOC_MODE: 1
         run: |
           bundle exec rake rswag:specs:swaggerize
