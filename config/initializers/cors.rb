@@ -9,7 +9,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
     origins "*"
 
-    resource "walking-skeleton", headers: :any, methods: :any
+    resource "/walking-skeleton", headers: :any, methods: :any
     resource "/api/v1/*",
       headers: :any,
       methods: [ :get, :post, :put, :patch, :delete, :options, :head ]
