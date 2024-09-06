@@ -1,0 +1,28 @@
+---
+openapi: 3.0.1
+info:
+  title: API V1
+  version: v1
+paths:
+  "/walking-skeleton":
+    get:
+      summary: Examine the walking skeleton
+      tags:
+      - Walking Skeleton
+      responses:
+        '200':
+          description: Walk
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                - message
+servers:
+- url: http://localhost:3000
+  description: Development environment
+- url: https://ithome-ironman-2024-san-juan.zeabur.app/
+  description: Production environment at Zeabur

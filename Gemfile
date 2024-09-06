@@ -38,3 +38,7 @@ group :development, :test do
 end
 
 
+
+gem "rspec-rails", "~> 7.0"
+
+gem "rswag", "~> 2.14"
