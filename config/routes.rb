@@ -12,4 +12,10 @@ Rails.application.routes.draw do
   root "rails/health#show"
 
   get "walking-skeleton" => "walking_skeleton#show"
+
+  namespace :api do
+    namespace :v1 do
+      resources :games, only: [ :index ]
+    end
+  end
 end

@@ -4,6 +4,33 @@ info:
   title: API V1
   version: v1
 paths:
+  "/api/v1/games":
+    get:
+      summary: List all games
+      tags:
+      - Games
+      responses:
+        '200':
+          description: Games found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  games:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        status:
+                          type: string
+                      required:
+                      - id
+                      - status
+                required:
+                - games
   "/walking-skeleton":
     get:
       summary: Examine the walking skeleton
