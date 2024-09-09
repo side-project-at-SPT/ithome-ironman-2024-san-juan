@@ -31,6 +31,64 @@ paths:
                       - status
                 required:
                 - games
+    post:
+      summary: Create a game
+      tags:
+      - Games
+      responses:
+        '200':
+          description: Game created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  status:
+                    type: string
+                required:
+                - id
+                - status
+  "/api/v1/games/{id}/play":
+    post:
+      summary: Play a game
+      tags:
+      - Games
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Game played
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  status:
+                    type: string
+                  message:
+                    type: string
+                required:
+                - id
+                - status
+                - message
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                choice:
+                  type: string
+              required:
+              - choice
   "/walking-skeleton":
     get:
       summary: Examine the walking skeleton

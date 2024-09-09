@@ -36,5 +36,61 @@ RSpec.describe "Api::V1::Games", type: :request do
         end
       end
     end
+
+    post 'Create a game' do
+      tags 'Games'
+      consumes 'application/json'
+      produces 'application/json'
+
+      response '200', 'Game created' do
+        schema type: :object,
+          properties: {
+            id: { type: :integer },
+            status: { type: :string }
+          },
+          required: [ 'id', 'status' ]
+
+        run_test! do
+          json = JSON.parse(response.body)
+          expect(json['status']).to eq('playing')
+        end
+      end
+    end
+  end
+
+  path '/api/v1/games/{id}/play' do
+    post 'Play a game' do
+      tags 'Games'
+      consumes 'application/json'
+      produces 'application/json'
+
+      let(:game) { Game.create(status: 'playing') }
+
+      parameter name: :id, in: :path, type: :integer, required: true
+      parameter name: :game, in: :body, schema: {
+        type: :object,
+        properties: {
+          choice: { type: :string }
+        },
+        required: [ 'choice' ]
+      }
+
+      response '200', 'Game played' do
+        schema type: :object,
+        properties: {
+          id: { type: :integer },
+          status: { type: :string },
+          message: { type: :string }
+        },
+        required: [ 'id', 'status', 'message' ]
+
+        let(:id) { game.id }
+        run_test! do
+          json = JSON.parse(response.body)
+          expect(json['status']).to eq('finished')
+          expect(json['message']).to eq('你選擇了礦工')
+        end
+      end
+    end
   end
 end
