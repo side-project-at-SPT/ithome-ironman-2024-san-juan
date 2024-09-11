@@ -53,6 +53,7 @@ RSpec.describe "Api::V1::Games", type: :request do
         run_test! do
           json = JSON.parse(response.body)
           expect(json['status']).to eq('playing')
+          expect(json['game_config']['seed']).to be_present
         end
       end
     end
