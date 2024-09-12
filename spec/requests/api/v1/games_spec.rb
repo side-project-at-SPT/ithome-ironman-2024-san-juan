@@ -8,7 +8,7 @@ RSpec.describe "Api::V1::Games", type: :request do
 
       before do
         Game.create
-        Game.create(status: 'playing')
+        Game.start_new_game
       end
 
       response '200', 'Games found' do
@@ -54,6 +54,9 @@ RSpec.describe "Api::V1::Games", type: :request do
           json = JSON.parse(response.body)
           expect(json['status']).to eq('playing')
           expect(json['game_config']['seed']).to be_present
+          expect(json['game_data']['current_price']).to eq(
+            TradingHouse.new(seed: json['game_config']['seed']).current_price
+          )
         end
       end
     end

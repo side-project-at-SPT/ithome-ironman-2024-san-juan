@@ -4,17 +4,9 @@ class Api::V1::GamesController < ApplicationController
   end
 
   def create
-    @game = Game.new(status: "playing")
-    unless @game.save
-      return  render json: { error: @game.errors.full_messages }
-    end
+    @game = Game.start_new_game
 
-    # generate a random seed
-    @game.seed = SecureRandom.hex(16)
-
-    unless @game.save
-      render json: { error: @game.errors.full_messages }
-    end
+    render json: { error: @game.errors.full_messages } unless @game.present?
   end
 
   def play
