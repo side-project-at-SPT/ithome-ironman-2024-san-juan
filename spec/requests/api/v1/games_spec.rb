@@ -42,6 +42,15 @@ RSpec.describe "Api::V1::Games", type: :request do
       consumes 'application/json'
       produces 'application/json'
 
+      parameter name: :payload, in: :body, schema: {
+        type: :object,
+        properties: {
+          seed: { type: :string, example: '1234567890abcdef', description: 'Optional' }
+        }
+      }
+
+      let(:payload) { { seed: '1234567890abcdef' } }
+
       response '200', 'Game created' do
         schema type: :object,
           properties: {
@@ -53,10 +62,10 @@ RSpec.describe "Api::V1::Games", type: :request do
         run_test! do
           json = JSON.parse(response.body)
           expect(json['status']).to eq('playing')
-          expect(json['game_config']['seed']).to be_present
-          expect(json['game_data']['current_price']).to eq(
-            TradingHouse.new(seed: json['game_config']['seed']).current_price
-          )
+          expect(json['game_config']['seed']).to eq('1234567890abcdef')
+          expect(json['game_data']['current_price']).to match_array([ 1, 2, 2, 2, 3 ])
+          expect(json['game_data']['supply_pile'].size).to eq(110 - 4)
+          expect(json['game_data']['supply_pile'][8]).to eq("01")
         end
       end
     end

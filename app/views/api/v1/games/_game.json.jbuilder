@@ -8,5 +8,6 @@ else
   end
   json.game_data do
     json.current_price game.current_price
+    json.supply_pile game.game_data["supply_pile"]
   end
 end

@@ -4,7 +4,7 @@ class Api::V1::GamesController < ApplicationController
   end
 
   def create
-    @game = Game.start_new_game
+    @game = Game.start_new_game(seed: params[:seed])
 
     render json: { error: @game.errors.full_messages } unless @game.present?
   end
