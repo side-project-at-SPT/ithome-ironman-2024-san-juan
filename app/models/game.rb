@@ -5,6 +5,17 @@ class Game < ApplicationRecord
     finished: 2
   }, prefix: true
 
+  Building = Struct.new(:id, :good_id, :card_ids)
+  Player = Struct.new(:id, :hand, :buildings) do
+    def to_json
+      {
+        id: id,
+        hand: hand,
+        buildings: buildings
+      }
+    end
+  end
+
   def play
     return errors.add(:status, "can't be blank") unless status_playing?
 
@@ -18,6 +29,8 @@ class Game < ApplicationRecord
       game = new(status: :playing)
       # 1. generate a random seed
       game.seed = seed || SecureRandom.hex(16)
+      game.game_data[:players] = generate_players.to_json
+      game.save
 
       # 2. shuffle the 5 trading house tiles
       game.game_data[:trading_house_order] = TradingHouse.new(seed: game.seed).order
@@ -34,8 +47,18 @@ class Game < ApplicationRecord
       deck.shuffle!
       game.game_data[:supply_pile] = deck
 
-      # 4. deal 4 cards to each player as their initial hand, hidden from other players
-      # 5. choose first player
+      # 4. Give each player 1 indigo plant as their initial building
+      players = game.players
+
+      players.each do |player|
+        player.buildings += [ Building.new("01") ]
+      end
+
+      game.game_data[:players] = players.to_json
+
+      # 5. deal 4 cards to each player as their initial hand, hidden from other players
+      # 6. choose first player
+
       game.save
 
       game
@@ -60,16 +83,27 @@ class Game < ApplicationRecord
       blank_card_id = Cards::BlankCard.id
       deck += (deck_size - deck.size).times.map { blank_card_id }
     end
+
+    # FIXME: hardcode 4 players for now
+    def generate_players
+      human_player = Player.new(1, [], [])
+      bot_players = 3.times.map { |i| Player.new(i + 2, [], []) }
+
+      [ human_player ] + bot_players
+    end
   end
 
   def current_price
     TradingHouse.new(game_data["trading_house_order"]).current_price
   end
 
-  # FIXME: hardcode 4 players for now
   def players
-    Struct.new(:size).new(
-      size: 4
-    )
+    return [] unless game_data["players"]
+
+    JSON.parse(game_data["players"]).map do |player|
+      Player.new(player["id"], player["hand"], player["buildings"].map { |building|
+        Building.new(building["id"], building["good_id"], building["card_ids"])
+      })
+    end
   end
 end

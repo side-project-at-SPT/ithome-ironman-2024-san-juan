@@ -66,6 +66,9 @@ RSpec.describe "Api::V1::Games", type: :request do
           expect(json['game_data']['current_price']).to match_array([ 1, 2, 2, 2, 3 ])
           expect(json['game_data']['supply_pile'].size).to eq(110 - 4)
           expect(json['game_data']['supply_pile'][8]).to eq("01")
+          expect(json['game_data']['players'].size).to eq(4)
+          expect(json['game_data']['players'][0]['buildings'].size).to eq(1)
+          expect(json['game_data']['players'][0]['buildings'][0]['id']).to eq("01")
         end
       end
     end
