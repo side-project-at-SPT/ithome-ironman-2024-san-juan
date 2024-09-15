@@ -27,9 +27,14 @@ class Game < ApplicationRecord
 
     def start_new_game(seed: nil)
       game = new(status: :playing)
+
       # 1. generate a random seed
       game.seed = seed || SecureRandom.hex(16)
-      game.game_data[:players] = generate_players.to_json
+      game.save
+
+      # 1.1. generate players and choose the first player
+      game.game_data[:players] = generate_players(seed: game.seed).to_json
+      game.game_data[:current_player_index] = 0
       game.save
 
       # 2. shuffle the 5 trading house tiles
@@ -45,7 +50,6 @@ class Game < ApplicationRecord
 
       # 3.3. shuffle the remaining cards to form a supply pile
       deck.shuffle!
-      game.game_data[:supply_pile] = deck
 
       # 4. Give each player 1 indigo plant as their initial building
       players = game.players
@@ -54,11 +58,14 @@ class Game < ApplicationRecord
         player.buildings += [ Building.new("01") ]
       end
 
-      game.game_data[:players] = players.to_json
-
       # 5. deal 4 cards to each player as their initial hand, hidden from other players
-      # 6. choose first player
+      players.each do |player|
+        player.hand = deck.shift(4)
+      end
 
+      # save the game data
+      game.game_data[:players] = players.to_json
+      game.game_data[:supply_pile] = deck
       game.save
 
       game
@@ -85,11 +92,13 @@ class Game < ApplicationRecord
     end
 
     # FIXME: hardcode 4 players for now
-    def generate_players
+    def generate_players(seed: nil)
+      srand(seed.to_i(16)) if seed
+
       human_player = Player.new(1, [], [])
       bot_players = 3.times.map { |i| Player.new(i + 2, [], []) }
 
-      [ human_player ] + bot_players
+      ([ human_player ] + bot_players).shuffle
     end
   end
 

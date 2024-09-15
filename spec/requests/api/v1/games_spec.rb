@@ -63,12 +63,18 @@ RSpec.describe "Api::V1::Games", type: :request do
           json = JSON.parse(response.body)
           expect(json['status']).to eq('playing')
           expect(json['game_config']['seed']).to eq('1234567890abcdef')
-          expect(json['game_data']['current_price']).to match_array([ 1, 2, 2, 2, 3 ])
-          expect(json['game_data']['supply_pile'].size).to eq(110 - 4)
-          expect(json['game_data']['supply_pile'][8]).to eq("01")
+          expect(json['game_data']['current_price']).to eq([ 1, 2, 2, 2, 3 ])
+          expect(json['game_data']['supply_pile'].size).to eq(110 - 4 - 4 * 4)
+          # pp json['game_data']['supply_pile'].index { |card| card == '01' }
+          expect(json['game_data']['supply_pile'][27]).to eq("01")
           expect(json['game_data']['players'].size).to eq(4)
           expect(json['game_data']['players'][0]['buildings'].size).to eq(1)
           expect(json['game_data']['players'][0]['buildings'][0]['id']).to eq("01")
+          # pp json['game_data']['players'].map { |player| player['id'] }
+          expect(json['game_data']['current_player_index']).to eq(0)
+          expect(json['game_data']['players'][0]['id']).to eq(1)
+          expect(json['game_data']['players'][0]['hand'].size).to eq(4)
+          expect(json['game_data']['players'][0]['hand']).to match_array([ "00", "00", "00", "00" ])
         end
       end
     end
