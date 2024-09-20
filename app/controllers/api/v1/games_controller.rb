@@ -9,6 +9,20 @@ class Api::V1::GamesController < ApplicationController
     render json: { error: @game.errors.full_messages } unless @game.present?
   end
 
+  def assign
+    @game = Game.find(params[:id])
+    @current_player ||= "dummy player"
+    @game.assign_role(role: params[:role], player: @current_player)
+    if @game.errors.any?
+      return render status: :unprocessable_entity, json: {
+        error: @game.errors.full_messages
+      }
+    end
+
+    @message = "你選擇了: #{params[:role]}"
+    render json: { message: @message }
+  end
+
   def play
     @game = Game.find(params[:id])
     @game.play

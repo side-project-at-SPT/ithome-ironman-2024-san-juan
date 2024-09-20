@@ -18,6 +18,9 @@ Rails.application.routes.draw do
       resources :games, only: [ :index, :create ] do
         member do
           post :play
+          scope :roles do
+            post ":role", action: :assign, as: :assign_role
+          end
         end
       end
     end

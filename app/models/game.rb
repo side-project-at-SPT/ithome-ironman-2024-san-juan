@@ -115,4 +115,19 @@ class Game < ApplicationRecord
       })
     end
   end
+
+  def assign_role(role:, player:)
+    return errors.add(:status, "can't be blank") unless status_playing?
+
+    roles = {
+      "builder" => "建築師",
+      "producer" => "製造商",
+      "trader" => "貿易商",
+      "prospector" => "礦工",
+      "councillor" => "議員"
+    }
+    return errors.add(:role, "#{role} is invalid") unless (roles.keys + roles.values).include?(role)
+
+    self
+  end
 end
