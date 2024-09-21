@@ -28,6 +28,10 @@ class Game < ApplicationRecord
     self.class.start_new_game(seed: seed, game: self)
   end
 
+  def assign_role(**params)
+    Games::ChooseRoleCommand.new(game: self, player: params[:player], role: params[:role]).call
+  end
+
   class << self
     def generate_seed = SecureRandom.hex(16)
 
@@ -130,20 +134,5 @@ class Game < ApplicationRecord
     return nil unless game_data["players"]
 
     players[game_data["current_player_index"]]["id"]
-  end
-
-  def assign_role(role:, player:)
-    return errors.add(:status, "can't be blank") unless status_playing?
-
-    roles = {
-      "builder" => "建築師",
-      "producer" => "製造商",
-      "trader" => "貿易商",
-      "prospector" => "礦工",
-      "councillor" => "議員"
-    }
-    return errors.add(:role, "#{role} is invalid") unless (roles.keys + roles.values).include?(role)
-
-    self
   end
 end

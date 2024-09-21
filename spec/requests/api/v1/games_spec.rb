@@ -115,4 +115,52 @@ RSpec.describe "Api::V1::Games", type: :request do
       end
     end
   end
+
+  path '/api/v1/games/{id}/roles/{role}' do
+    post 'Player chooses a role' do
+      tags 'Games'
+      consumes 'application/json'
+      produces 'application/json'
+
+      let(:game) { Game.start_new_game }
+
+      parameter name: :id, in: :path, type: :integer, required: true
+      parameter name: :role, in: :path, type: :string, required: true
+
+      response '200', 'Choose a role successfully' do
+        schema type: :object,
+        properties: {
+          message: { type: :string }
+        },
+        required: [ 'message' ]
+
+        let(:id) { game.id }
+        let(:role) { 'prospector' }
+
+        run_test! do
+          json = JSON.parse(response.body)
+          expect(json['message']).to eq('你選擇了: prospector')
+        end
+      end
+
+      response '422', 'Role is being taken' do
+        schema type: :object,
+        properties: { error: { type: :array, items: { type: :string } } },
+        required: [ 'error' ]
+
+        let(:id) { game.id }
+        let(:role) { 'trader' }
+
+        before do
+          game.game_data['roles'].delete(Games::Roles::Trader.to_s)
+          game.save
+        end
+
+        run_test! do
+          json = JSON.parse(response.body)
+          expect(json['error']).to match_array([ 'Role Trader is being taken' ])
+        end
+      end
+    end
+  end
 end

@@ -8,30 +8,43 @@ module Games
     end
 
     def call
-      # puts "ChooseRoleCommand call"
-      # puts "game current user index: #{game.game_data["current_player_index"]}"
-      # puts game.game_data["players"][0]
-      # puts game.game_data["players"][game.current_player_id]
-      # puts
-      role.in? game.game_data["roles"]
+      if errors.any?
+        game.errors.add(:base, errors.full_messages.join(", "))
+        return game
+      end
 
-      # update game data
-      # game_data = game.game_data
-      # pp role
-      # game_data["roles"].delete(role)
-      # pp game_data["roles"]
-      # pp game.game_data["roles"].delete(role)
+      role_is_taken?(role, game.game_data["roles"]) do
+        errors.add(:role, "#{role.demodulize} is being taken") and return self
+      end
+
       game.game_data["roles"].delete(role)
-      # puts "-----------------" + "set player role" + "-----------------"
       game.game_data["players"][game.game_data["current_player_index"]]["role"] = role
       game.save
 
-      # puts "-----------------" + "game data" + "-----------------"
-      # game.reload
-      # pp game.players
-      # pp game.game_data["players"]
+      # 判斷下一個動作要做什麼
+      case role
+      when Roles::Prospector.to_s
+        # 判斷玩家是否有金礦或金工坊
+        # 如果有，則讓玩家選擇要先執行哪個動作
+        # 如果沒有，則直接執行礦工的動作
+        player_buildings = game.game_data["players"][game.game_data["current_player_index"]]["buildings"]
+        # if player_buildings.any? { |building| building["id"] == Cards::GoldMine.id || building["id"] == Cards::GoldSmithy.id }
+        if player_buildings.any? { |building| building["id"] == "07" || building["id"] == "38" }
+          # TODO: implement this
+          puts "TODO: implement this (choose action)"
+        else
+          # 從牌庫抽取一張卡片
+          @post_action = [ Games::DrawCommand, { player_id: player.id, number: 1 } ]
+          # game.current_player.hand << game.game_data["deck"].shift
+          # game.save
 
-      # pp game.game_data["roles"]
+          # puts "TODO: implement this (draw card)"
+        end
+      else
+        pp "Unimplemented role: #{role}"
+      end
+
+      self
     end
 
     class InvalidRoleError < RuntimeError
@@ -46,10 +59,23 @@ module Games
 
     private
 
-    def validate_role!(params_role = nil)
-      raise InvalidRoleError.new(params_role) unless (role = find_role(params_role))
+    def role_is_taken?(role, roles, &block)
+      unless role.in? roles
+        if block_given?
+          block.call
+        else
+          raise InvalidRoleError.new(role)
+        end
+      end
+    end
 
-      role
+    def validate_role!(params_role = nil)
+      if (role = find_role(params_role))
+        role
+      else
+        errors.add(:role, "#{params_role} is invalid")
+        nil
+      end
     end
 
     def find_role(value)
