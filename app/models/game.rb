@@ -22,18 +22,24 @@ class Game < ApplicationRecord
     self.status_finished!
   end
 
+  def restart
+    status_playing!
+    save
+    self.class.start_new_game(seed: seed, game: self)
+  end
+
   class << self
     def generate_seed = SecureRandom.hex(16)
 
-    def start_new_game(seed: nil)
-      game = new(status: :playing)
+    def start_new_game(seed: nil, game: nil)
+      game ||= new(status: :playing)
 
       # 1. generate a random seed
       game.seed = seed || SecureRandom.hex(16)
       game.save
 
       # 1.1. generate players and choose the first player
-      game.game_data[:players] = generate_players(seed: game.seed).to_json
+      game.game_data[:players] = generate_players(seed: game.seed)
       game.game_data[:current_player_index] = 0
       game.save
 
@@ -63,9 +69,13 @@ class Game < ApplicationRecord
         player.hand = deck.shift(4)
       end
 
+      # 6. prepare role cards
+      roles = Games::Roles::All
+
       # save the game data
-      game.game_data[:players] = players.to_json
+      game.game_data[:players] = players
       game.game_data[:supply_pile] = deck
+      game.game_data[:roles] = roles
       game.save
 
       game
@@ -109,11 +119,17 @@ class Game < ApplicationRecord
   def players
     return [] unless game_data["players"]
 
-    JSON.parse(game_data["players"]).map do |player|
+    game_data["players"].map do |player|
       Player.new(player["id"], player["hand"], player["buildings"].map { |building|
         Building.new(building["id"], building["good_id"], building["card_ids"])
       })
     end
+  end
+
+  def current_player_id
+    return nil unless game_data["players"]
+
+    players[game_data["current_player_index"]]["id"]
   end
 
   def assign_role(role:, player:)

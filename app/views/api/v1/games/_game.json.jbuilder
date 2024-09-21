@@ -11,6 +11,7 @@ else
     json.current_price game.current_price
     json.supply_pile game.game_data["supply_pile"]
     json.current_player_index game.game_data["current_player_index"]
+    json.roles game.game_data["roles"]
     json.players game.players do |player|
       json.id player.id
       json.hand player.hand

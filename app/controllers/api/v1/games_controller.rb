@@ -19,6 +19,11 @@ class Api::V1::GamesController < ApplicationController
       }
     end
 
+    # - 選完職業，更新遊戲狀態
+    # - 判斷有沒有什麼動作可以由系統接續自動執行
+    # - 如果有，回傳 202
+    # - 如果沒有，回傳 204
+
     @message = "你選擇了: #{params[:role]}"
     render json: { message: @message }
   end
