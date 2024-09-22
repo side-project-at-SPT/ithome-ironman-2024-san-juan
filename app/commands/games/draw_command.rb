@@ -8,6 +8,7 @@ module Games
     end
 
     def call
+      puts "Draw Command called"
       current_player_index = game.game_data["current_player_index"]
       game.game_data["players"][current_player_index]["hand"] << game.game_data["supply_pile"].pop
       game.save

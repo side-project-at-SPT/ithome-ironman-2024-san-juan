@@ -37,8 +37,56 @@ class Game < ApplicationRecord
     command_builder(Games::ChooseRoleCommand, params.merge(description: "選擇職業"))
   end
 
+  # @param role_class_name [String] role class name
+  def start_phase!(role_class_name)
+    # 1. start a new phase
+    self.phase = role_class_name.demodulize.downcase.to_sym
+
+    # 2. set up waiting players(start from the current player) for the phase, with that we can track who has finished their turn
+    self.game_data[:waiting_players] = [ 0, 1, 2, 3 ].rotate(game_data["current_player_index"])
+    self.save
+  end
+
   def notify_next_turn
     Rails.logger.debug { "TODO: notify next turn" }
+    puts "it's idx: #{game_data["current_player_index"]}'s turn"
+    # puts "it's id:#{players[game_data["current_player_index"]].id}'s turn"
+
+    # TODO: 🚧 notify the next player to take action
+    return
+
+    # this method will notify the next player to take action
+    # TODO: take action by system if the current player is a bot
+
+    @@count ||= 0
+    @@count += 1
+    raise "infinite loop" if @@count > 4
+
+    # assume the current player is a bot
+    # call turn_over! to move to the next player
+    turn_over!
+  end
+
+  def turn_over!
+    game_data["waiting_players"].shift
+
+    # 1. check if the waiting player is blank?
+    # 1.1. if blank, then the phase is over
+    # 1.2. if not blank, then move to the next player
+    if game_data["waiting_players"].blank?
+
+      # # 2. phase is over
+      # self.phase = :game_over
+      puts "TODO: implement this (phase is over)"
+    else
+
+      # 3. move to the next player
+      self.game_data[:current_player_index] = game_data["waiting_players"].first
+    end
+
+    self.save
+
+    notify_next_turn
   end
 
   class << self

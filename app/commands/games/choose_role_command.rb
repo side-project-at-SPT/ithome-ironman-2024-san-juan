@@ -20,11 +20,12 @@ module Games
       game.game_data["roles"].delete(role)
       game.game_data["players"][game.game_data["current_player_index"]]["role"] = role
       game.save
-      game.update!(phase: role.demodulize.downcase.to_sym)
+
+      game.start_phase!(role)
 
       # 判斷下一個動作要做什麼
-      case role
-      when Roles::Prospector.to_s
+      case game.phase
+      when "prospector"
         # 判斷玩家是否有金礦或金工坊
         # 如果有，則讓玩家選擇要先執行哪個動作
         # 如果沒有，則直接執行礦工的動作
@@ -37,7 +38,7 @@ module Games
         else
           # 從牌庫抽取一張卡片
           @post_action = [
-            Games::DrawCommand,
+            Games::ProspectorDrawCommand,
             {
               player_id: player.id,
               number: 1,

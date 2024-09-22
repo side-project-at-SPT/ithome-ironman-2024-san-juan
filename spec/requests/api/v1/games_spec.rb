@@ -122,8 +122,13 @@ RSpec.describe "Api::V1::Games", type: :request do
 
           # the prospector's privilege is to draw a card
           # so the player should have 1 more card in hand
+          # current_player_index = json['game_data']['current_player_index']
+          # expect(json['game_data']['players'][current_player_index]['hand'].size).to eq(5)
+
+          # since the current player will turn to the next player, we should check the previous player's hand
           current_player_index = json['game_data']['current_player_index']
-          expect(json['game_data']['players'][current_player_index]['hand'].size).to eq(5)
+          previous_player_index = (current_player_index - 1) % 4
+          expect(json['game_data']['players'][previous_player_index]['hand'].size).to eq(5)
         end
       end
 
