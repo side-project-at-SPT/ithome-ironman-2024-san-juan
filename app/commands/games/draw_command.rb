@@ -8,9 +8,9 @@ module Games
     end
 
     def call
-      puts "TODO: implement this (draw card)"
-
-      @post_action = [ Games::DrawCommand, { player_id: player.id, number: number + 1 } ]
+      current_player_index = game.game_data["current_player_index"]
+      game.game_data["players"][current_player_index]["hand"] << game.game_data["supply_pile"].pop
+      game.save
 
       self
     end

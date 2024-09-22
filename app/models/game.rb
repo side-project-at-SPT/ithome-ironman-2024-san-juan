@@ -28,8 +28,12 @@ class Game < ApplicationRecord
     self.class.start_new_game(seed: seed, game: self)
   end
 
-  def assign_role(**params)
-    Games::ChooseRoleCommand.new(game: self, player: params[:player], role: params[:role]).call
+  def build_assign_role_command(**params)
+    command_builder(Games::ChooseRoleCommand, params.merge(description: "選擇職業"))
+  end
+
+  def notify_next_turn
+    Rails.logger.debug { "TODO: notify next turn" }
   end
 
   class << self
@@ -134,5 +138,15 @@ class Game < ApplicationRecord
     return nil unless game_data["players"]
 
     players[game_data["current_player_index"]]["id"]
+  end
+
+  private
+
+  # 產生任意 command
+  # @param command [Class] command class
+  # @param params [Hash] command parameters
+  # @return [Games::PlayerCommand] command instance
+  def command_builder(command, params)
+    command.new(params.merge(game: self))
   end
 end

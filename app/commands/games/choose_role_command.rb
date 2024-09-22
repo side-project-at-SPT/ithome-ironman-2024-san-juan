@@ -28,17 +28,21 @@ module Games
         # 如果有，則讓玩家選擇要先執行哪個動作
         # 如果沒有，則直接執行礦工的動作
         player_buildings = game.game_data["players"][game.game_data["current_player_index"]]["buildings"]
+
         # if player_buildings.any? { |building| building["id"] == Cards::GoldMine.id || building["id"] == Cards::GoldSmithy.id }
         if player_buildings.any? { |building| building["id"] == "07" || building["id"] == "38" }
           # TODO: implement this
           puts "TODO: implement this (choose action)"
         else
           # 從牌庫抽取一張卡片
-          @post_action = [ Games::DrawCommand, { player_id: player.id, number: 1 } ]
-          # game.current_player.hand << game.game_data["deck"].shift
-          # game.save
-
-          # puts "TODO: implement this (draw card)"
+          @post_action = [
+            Games::DrawCommand,
+            {
+              player_id: player.id,
+              number: 1,
+              description: "選擇礦工玩家抽一張卡片"
+            }
+          ]
         end
       else
         pp "Unimplemented role: #{role}"

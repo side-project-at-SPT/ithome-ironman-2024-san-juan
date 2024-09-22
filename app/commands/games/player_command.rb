@@ -2,7 +2,7 @@ module Games
   class PlayerCommand
     include ActiveModel::Validations
 
-    attr_reader :game, :player, :post_action
+    attr_reader :game, :player, :post_action, :description
 
     # 1. 遊戲是否存在
     # 2. 玩家是否存在
@@ -11,14 +11,28 @@ module Games
     validate :game_exists?, :player_exists?, :player_turn?, :status_playing?
 
     def initialize(params = {})
-      @game = params[:game]
-      @player = User.new(params[:player_id])
-      validate!
+      @game = params.delete(:game)
+      @player = User.new(params.delete(:player_id))
+      @description = params.delete(:description)
+      validate
+
+      Rails.logger.debug { "PlayerCommand: #{self.class.name}, description: #{description}" }
+      Rails.logger.debug { "params:" }
+      Rails.logger.debug { params.merge(game: game.then { |g| [ g.id, g.status, g.updated_at ] }, player: player.id) }
     end
 
-    def exec_post_action(params)
-      game = Game.find(params[:game_id])
-      @post_action = post_action[0].new(post_action[1].merge(game: game)).call
+    # 執行 post action if exists
+    def resolve_post_action(game:)
+      # 1. extract @post_action to build a new command
+      # 2. call the new command
+      # 3. loop until there is no post action
+      # 4. a hard limit of 10 post actions to prevent infinite loop
+      executions = 0
+      while post_action.present? && executions < 10
+        command_klass, command_params = post_action
+        @post_action = command_klass.new(command_params.merge(game: game)).call.post_action
+        executions += 1
+      end
     end
 
     private

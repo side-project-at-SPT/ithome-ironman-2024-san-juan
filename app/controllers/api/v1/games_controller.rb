@@ -5,6 +5,8 @@ class Api::V1::GamesController < ApplicationController
     @games = Game.all
   end
 
+  def show; end
+
   def create
     @game = Game.start_new_game(seed: params[:seed])
 
@@ -26,33 +28,25 @@ class Api::V1::GamesController < ApplicationController
     # - currently, we don't have a real player. Use a dummy player instead.
     @current_player ||= "dummy player"
 
-    # - 選完職業，更新遊戲狀態
-    res = @game.assign_role(role: params[:role], player: @current_player)
-    if res.errors.any?
-      return render status: :unprocessable_entity, json: {
-        error: res.errors.full_messages
-      }
+    command = @game.build_assign_role_command(role: params[:role], player: @current_player)
+    if command.errors.any?
+      return render status: :bad_request, json: { error: command.errors.full_messages }
     end
 
-    # experiment: use post_action to connect the next action
-    # or use queue to store and execute the next actions
-    counter = 0
-    while counter < 3 && res.post_action.present? do
-      pp counter
-      counter += 1
-      # puts "post_action present"
-      # pp res.post_action
-      res = res.exec_post_action(game_id: @game.id)
+    result = command.call
+    if result.errors.any?
+      return render status: :unprocessable_entity, json: { error: result.errors.full_messages }
     end
 
-    puts "post_action not present"
+    # resolve the rest of the action can be done automatically
+    result.resolve_post_action(game: @game)
 
-    # - 判斷有沒有什麼動作可以由系統接續自動執行
-    # - 如果有，回傳 202
-    # - 如果沒有，回傳 204
+    # notify the next player to take action
+    # TODO: implement this
+    @game.notify_next_turn
 
     @message = "你選擇了: #{params[:role]}"
-    render json: { message: @message }
+    render :show
   end
 
   def play

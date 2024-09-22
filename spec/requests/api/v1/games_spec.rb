@@ -87,6 +87,7 @@ RSpec.describe "Api::V1::Games", type: :request do
       produces 'application/json'
 
       let(:game) { Game.create(status: 'playing') }
+      let(:id) { game.id }
 
       parameter name: :id, in: :path, type: :integer, required: true
       parameter name: :game, in: :body, schema: {
@@ -106,7 +107,6 @@ RSpec.describe "Api::V1::Games", type: :request do
         },
         required: [ 'id', 'status', 'message' ]
 
-        let(:id) { game.id }
         run_test! do
           json = JSON.parse(response.body)
           expect(json['status']).to eq('finished')
@@ -123,6 +123,8 @@ RSpec.describe "Api::V1::Games", type: :request do
       produces 'application/json'
 
       let(:game) { Game.start_new_game }
+      let(:id) { game.id }
+      let(:role) { 'prospector' }
 
       parameter name: :id, in: :path, type: :integer, required: true
       parameter name: :role, in: :path, type: :string, required: true
@@ -134,13 +136,21 @@ RSpec.describe "Api::V1::Games", type: :request do
         },
         required: [ 'message' ]
 
-        let(:id) { game.id }
-        let(:role) { 'prospector' }
-
         run_test! do
           json = JSON.parse(response.body)
           expect(json['message']).to eq('你選擇了: prospector')
+
+          # the prospector's privilege is to draw a card
+          # so the player should have 1 more card in hand
+          current_player_index = json['game_data']['current_player_index']
+          expect(json['game_data']['players'][current_player_index]['hand'].size).to eq(5)
         end
+      end
+
+      response '400', 'Game is already finished' do
+        before { game.status_finished! }
+
+        run_test!
       end
 
       response '422', 'Role is being taken' do
@@ -148,17 +158,14 @@ RSpec.describe "Api::V1::Games", type: :request do
         properties: { error: { type: :array, items: { type: :string } } },
         required: [ 'error' ]
 
-        let(:id) { game.id }
-        let(:role) { 'trader' }
-
         before do
-          game.game_data['roles'].delete(Games::Roles::Trader.to_s)
+          game.game_data['roles'].delete(Games::Roles::Prospector.to_s)
           game.save
         end
 
         run_test! do
           json = JSON.parse(response.body)
-          expect(json['error']).to match_array([ 'Role Trader is being taken' ])
+          expect(json['error']).to match_array([ 'Role Prospector is being taken' ])
         end
       end
     end
