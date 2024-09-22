@@ -5,6 +5,17 @@ class Game < ApplicationRecord
     finished: 2
   }, prefix: true
 
+  enum :phase, {
+    unknown: 0,
+    choose_role: 1,
+    builder: 2,
+    producer: 3,
+    trader: 4,
+    prospector: 5,
+    councillor: 6,
+    game_over: 7
+  }, suffix: true
+
   Building = Struct.new(:id, :good_id, :card_ids)
   Player = Struct.new(:id, :hand, :buildings) do
     def to_json
@@ -14,12 +25,6 @@ class Game < ApplicationRecord
         buildings: buildings
       }
     end
-  end
-
-  def play
-    return errors.add(:status, "can't be blank") unless status_playing?
-
-    self.status_finished!
   end
 
   def restart
@@ -40,7 +45,7 @@ class Game < ApplicationRecord
     def generate_seed = SecureRandom.hex(16)
 
     def start_new_game(seed: nil, game: nil)
-      game ||= new(status: :playing)
+      game ||= new(status: :playing, phase: :choose_role)
 
       # 1. generate a random seed
       game.seed = seed || SecureRandom.hex(16)

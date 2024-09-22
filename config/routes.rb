@@ -17,7 +17,6 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :games, only: [ :index, :create ] do
         member do
-          post :play
           post :restart
           scope :roles do
             post ":role", action: :assign, as: :assign_role

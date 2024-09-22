@@ -20,6 +20,7 @@ module Games
       game.game_data["roles"].delete(role)
       game.game_data["players"][game.game_data["current_player_index"]]["role"] = role
       game.save
+      game.update!(phase: role.demodulize.downcase.to_sym)
 
       # 判斷下一個動作要做什麼
       case role

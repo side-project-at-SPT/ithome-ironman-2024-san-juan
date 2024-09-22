@@ -75,42 +75,15 @@ RSpec.describe "Api::V1::Games", type: :request do
           expect(json['game_data']['players'][0]['id']).to eq(1)
           expect(json['game_data']['players'][0]['hand'].size).to eq(4)
           expect(json['game_data']['players'][0]['hand']).to match_array([ "00", "00", "00", "00" ])
-        end
-      end
-    end
-  end
 
-  path '/api/v1/games/{id}/play' do
-    post 'Play a game' do
-      tags 'Games'
-      consumes 'application/json'
-      produces 'application/json'
-
-      let(:game) { Game.create(status: 'playing') }
-      let(:id) { game.id }
-
-      parameter name: :id, in: :path, type: :integer, required: true
-      parameter name: :game, in: :body, schema: {
-        type: :object,
-        properties: {
-          choice: { type: :string }
-        },
-        required: [ 'choice' ]
-      }
-
-      response '200', 'Game played' do
-        schema type: :object,
-        properties: {
-          id: { type: :integer },
-          status: { type: :string },
-          message: { type: :string }
-        },
-        required: [ 'id', 'status', 'message' ]
-
-        run_test! do
-          json = JSON.parse(response.body)
-          expect(json['status']).to eq('finished')
-          expect(json['message']).to eq('你選擇了礦工')
+          expect(json['game_data']['roles']).to match_array([
+            "Games::Roles::Builder",
+            "Games::Roles::Councillor",
+            "Games::Roles::Producer",
+            "Games::Roles::Prospector",
+            "Games::Roles::Trader"
+          ])
+          expect(json['game_data']['phase']).to eq('choose_role')
         end
       end
     end
@@ -139,6 +112,13 @@ RSpec.describe "Api::V1::Games", type: :request do
         run_test! do
           json = JSON.parse(response.body)
           expect(json['message']).to eq('你選擇了: prospector')
+          expect(json['game_data']['roles']).to match_array([
+            "Games::Roles::Builder",
+            "Games::Roles::Councillor",
+            "Games::Roles::Producer",
+            "Games::Roles::Trader"
+          ])
+          expect(json['game_data']['phase']).to eq('prospector')
 
           # the prospector's privilege is to draw a card
           # so the player should have 1 more card in hand

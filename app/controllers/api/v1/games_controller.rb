@@ -1,5 +1,5 @@
 class Api::V1::GamesController < ApplicationController
-  before_action :set_game, only: %i[restart assign play]
+  before_action :set_game, only: %i[restart assign show]
 
   def index
     @games = Game.all
@@ -47,14 +47,6 @@ class Api::V1::GamesController < ApplicationController
 
     @message = "你選擇了: #{params[:role]}"
     render :show
-  end
-
-  def play
-    @game.play
-
-    return render status: :unprocessable_entity, json: { error: @game.errors.full_messages } if @game.errors.any?
-
-    @message = "你選擇了礦工"
   end
 
   private
