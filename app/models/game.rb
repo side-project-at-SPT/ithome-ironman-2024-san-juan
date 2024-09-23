@@ -16,6 +16,13 @@ class Game < ApplicationRecord
     game_over: 7
   }, suffix: true
 
+  has_many :game_steps
+
+  def generate_game_steps(reason: 0, description: "")
+    steps = game_steps.last&.steps || -1
+    game_steps.create(game_data: game_data, steps: steps + 1, reason: reason, description: description)
+  end
+
   Building = Struct.new(:id, :good_id, :card_ids)
   Player = Struct.new(:id, :hand, :buildings, :role, :is_bot) do
     def to_json
@@ -50,103 +57,6 @@ class Game < ApplicationRecord
 
     puts "\nPhase: #{phase} started"
     puts "  #{game_data["waiting_players"][0]}'s turn begins"
-  end
-
-  def notify_next_turn
-    current_player = players[game_data["current_player_index"]]
-
-    Rails.logger.debug { "TODO: notify next turn" }
-    puts "\n  current phase: #{phase} \n\n"
-
-    if choose_role_phase?
-      puts "  目前玩家(#{current_player.is_bot ? 'bot' : 'human'})必須選擇職業"
-    else
-      puts "  目前玩家(#{current_player.is_bot ? 'bot' : 'human'})必須執行行動"
-    end
-
-    puts "  it's idx: #{game_data["current_player_index"]}'s turn"
-
-    @count ||= 0
-    @count += 1
-    if @count > 16
-      # To prevent infinite loop
-      raise "infinite loop"
-    end
-
-    if choose_role_phase?
-      if player_is_bot?(current_player)
-        command = command_builder(Games::RandomlyChooseRoleCommand, player_id: current_player.id)
-        command.call.resolve_post_action(game: self)
-
-        return turn_over!
-      else
-        # raise "wait for human player to take action"
-        #
-        wait_for_human_player_to_take_action = true
-        if wait_for_human_player_to_take_action
-          # no-op
-          return
-        else
-          command = command_builder(Games::RandomlyChooseRoleCommand, player_id: current_player.id)
-          command.call.resolve_post_action(game: self)
-          return turn_over!
-        end
-      end
-    else
-      # no-op
-    end
-
-    turn_over!
-  end
-
-  def build_turn_over_command
-    # FIXME: hardcode the command for now
-    # command_builder(Games::TurnOverCommand, game: self)
-  end
-
-  def turn_over!
-    command_builder(Games::TurnOverCommand, game: self).call
-    # c_player = game_data["waiting_players"].shift
-    # puts "  #{c_player}'s turn is over"
-
-    # # 1. check if the waiting player is blank?
-    # # 1.1. if blank, then the phase is over
-    # # 1.2. if not blank, then move to the next player
-    # if game_data["waiting_players"].blank?
-    #   phase_over!
-    # else
-
-    #   # 3. move to the next player
-    #   self.game_data[:current_player_index] = game_data["waiting_players"].first
-    # end
-
-    # self.save
-
-    # notify_next_turn
-  end
-
-  def phase_over!
-    # puts "#{phase} is over"
-    # # when phase is over,
-    # # 1. check if end_game condition is met
-    # # 2. if not, check if all players choose the role
-    # # 3. if yes, current round is over, start a new round
-    # # 4. if not, start a new phase
-
-    # if end_game_condition_met?
-    #   puts "TODO: implement this (call game over)"
-    # elsif all_players_choose_role?
-    #   puts "TODO: implement this (start a new round)"
-    #   pp @count
-    #   raise "start a new round"
-    # else
-    #   # the current player is the last player of current phase
-    #   # the next player is the first player of the current phase
-    #   # so the next phase's first player is 2 steps ahead of the current player
-    #   self.game_data[:current_player_index] = (game_data["current_player_index"] + 2) % 4
-    #   self.phase = :choose_role
-    #   self.save
-    # end
   end
 
   class << self
@@ -198,6 +108,8 @@ class Game < ApplicationRecord
       game.game_data[:supply_pile] = deck
       game.game_data[:roles] = roles
       game.save
+
+      game.generate_game_steps(reason: "game_init", description: "遊戲開始")
 
       game
     end

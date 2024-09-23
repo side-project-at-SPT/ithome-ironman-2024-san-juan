@@ -46,9 +46,8 @@ class Api::V1::GamesController < ApplicationController
     #            ex: POST /api/v1/games/1/roles/producer?np=0, will not step to the next player
     result.resolve_post_action(game: @game, options: { np: params[:np] != "0" })
 
-    # # notify the next player to take action
-    # # TODO: implement this
-    # @game.notify_next_turn
+    # notify the next player to take action
+    # TODO: implement this
 
     @message = "你選擇了: #{params[:role]}"
     render :show

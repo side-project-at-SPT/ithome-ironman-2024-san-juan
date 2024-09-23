@@ -14,6 +14,8 @@ module Games
       puts "  #{c_player}'s turn is over"
       game.save
 
+      game.generate_game_steps(reason: "player_turn_end", description: "#{c_player} 的回合結束")
+
       # 1. check if the waiting player is blank?
       # 1.1. if blank, then the phase is over
       # 1.2. if not blank, then move to the next player
@@ -28,7 +30,6 @@ module Games
         game.save
       end
 
-      # game.notify_next_turn
       @post_action = [ Games::NotifyNextTurnBeginsCommand, {
         description: "換下一位玩家",
         current_player: game.players[game.game_data["current_player_index"]]

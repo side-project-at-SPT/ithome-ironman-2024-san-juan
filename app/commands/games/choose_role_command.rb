@@ -23,6 +23,11 @@ module Games
 
       game.start_phase!(role)
 
+      game.generate_game_steps(
+        reason: "choose_role",
+        description: "id:#{game.players[game.game_data["current_player_index"]].id} 選擇了 #{role.demodulize}"
+      )
+
       # 判斷下一個動作要做什麼
       case game.phase
       when "prospector"
@@ -47,13 +52,6 @@ module Games
           ]
         end
       else
-        # @post_action = [
-        #   UnimplementedCommand, {
-        #     message: "Unimplemented role: #{role}",
-        #     player_id: player.id,
-        #     description: "選擇職業(未實作)"
-        #   }
-        # ]
         @post_action = [ Games::TurnOverCommand, { description: "選擇職業結束，換下一位玩家" } ]
       end
 

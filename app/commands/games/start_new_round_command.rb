@@ -19,9 +19,9 @@ module Games
       game.game_data["players"] = players
       game.save
 
-      # for testing purpose, we remove the role prospector
-      game.game_data["roles"].delete("Games::Roles::Prospector")
-      game.save
+      # TODO: round number should be increased by 1
+      game.generate_game_steps(reason: "round_begin", description: "回合開始")
+
 
       @post_action = [ Games::NotifyNextTurnBeginsCommand, {
         description: "換下一位玩家",

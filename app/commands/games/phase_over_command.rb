@@ -11,6 +11,8 @@ module Games
 
     def call
       puts "=== #{game.phase} is over ==="
+
+      game.generate_game_steps(reason: "phase_over", description: "#{game.phase} 階段結束")
       # when phase is over,
       # 1. check if end_game condition is met
       # 2. if not, check if all players choose the role
@@ -39,7 +41,6 @@ module Games
           description: "開始新的一輪"
         } ]
       else
-        # game.notify_next_turn
         @post_action = [ NotifyNextTurnBeginsCommand, {
           description: "換下一位玩家",
           current_player: game.players[game.game_data["current_player_index"]]

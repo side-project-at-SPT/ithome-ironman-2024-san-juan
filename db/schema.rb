@@ -10,9 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_09_22_155101) do
+ActiveRecord::Schema[7.2].define(version: 2024_09_23_173105) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "game_steps", force: :cascade do |t|
+    t.bigint "game_id", null: false
+    t.json "game_data", default: {}, null: false
+    t.string "description"
+    t.integer "steps", null: false
+    t.integer "reason", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["game_id", "steps"], name: "index_game_steps_on_game_id_and_steps", unique: true
+    t.index ["game_id"], name: "index_game_steps_on_game_id"
+  end
 
   create_table "games", force: :cascade do |t|
     t.integer "status", default: 0, null: false
@@ -24,4 +36,6 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_22_155101) do
     t.json "result", default: {}
     t.integer "phase", default: 0, null: false
   end
+
+  add_foreign_key "game_steps", "games"
 end

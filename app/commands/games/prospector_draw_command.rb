@@ -10,9 +10,11 @@ module Games
     def call
       puts "Prospector Draw Command called"
       DrawCommand.new(game: game, player: player, number: number).call
+      game.generate_game_steps(
+        reason: "prospector_action",
+        description: "玩家 #{player.id} 抽了 #{number} 張卡片"
+      )
 
-      # current player's turn over, time to move to the next player
-      # game.turn_over!
       @post_action = [ Games::TurnOverCommand, { description: "礦工抽卡結束，換下一位玩家" } ]
 
       self
