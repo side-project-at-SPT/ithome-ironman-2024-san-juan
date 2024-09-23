@@ -22,17 +22,28 @@ module Games
     end
 
     # 執行 post action if exists
-    def resolve_post_action(game:)
+    def resolve_post_action(game:, options: {})
       # 1. extract @post_action to build a new command
       # 2. call the new command
       # 3. loop until there is no post action
-      # 4. a hard limit of 10 post actions to prevent infinite loop
+      # 4. a hard limit of 99 post actions to prevent infinite loop
       executions = 0
-      while post_action.present? && executions < 10
+      executions_limit = 50
+      while post_action.present? && executions < executions_limit
+        # pp post_action
         command_klass, command_params = post_action
+        if options[:np] == false && command_klass == Games::NotifyNextTurnBeginsCommand
+          break
+        end
         @post_action = command_klass.new(command_params.merge(game: game)).call.post_action
         executions += 1
       end
+
+      if executions >= executions_limit
+        raise "Too many post actions, executed #{executions} times, possible infinite loop"
+      end
+
+      self
     end
 
     private

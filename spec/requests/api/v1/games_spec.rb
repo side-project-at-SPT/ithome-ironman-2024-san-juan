@@ -101,6 +101,7 @@ RSpec.describe "Api::V1::Games", type: :request do
 
       parameter name: :id, in: :path, type: :integer, required: true
       parameter name: :role, in: :path, type: :string, required: true
+      parameter name: :np, in: :query, type: :string, required: false
 
       response '200', 'Choose a role successfully' do
         schema type: :object,
@@ -109,26 +110,30 @@ RSpec.describe "Api::V1::Games", type: :request do
         },
         required: [ 'message' ]
 
-        run_test! do
-          json = JSON.parse(response.body)
-          expect(json['message']).to eq('你選擇了: prospector')
-          expect(json['game_data']['roles']).to match_array([
-            "Games::Roles::Builder",
-            "Games::Roles::Councillor",
-            "Games::Roles::Producer",
-            "Games::Roles::Trader"
-          ])
-          expect(json['game_data']['phase']).to eq('prospector')
+        context 'when not automatically move game state to the next player' do
+          let(:np) { '0' }
 
-          # the prospector's privilege is to draw a card
-          # so the player should have 1 more card in hand
-          # current_player_index = json['game_data']['current_player_index']
-          # expect(json['game_data']['players'][current_player_index]['hand'].size).to eq(5)
+          run_test! do
+            json = JSON.parse(response.body)
+            expect(json['message']).to eq('你選擇了: prospector')
+            expect(json['game_data']['roles']).to match_array([
+              "Games::Roles::Builder",
+              "Games::Roles::Councillor",
+              "Games::Roles::Producer",
+              "Games::Roles::Trader"
+            ])
+            expect(json['game_data']['phase']).to eq('prospector')
 
-          # since the current player will turn to the next player, we should check the previous player's hand
-          current_player_index = json['game_data']['current_player_index']
-          previous_player_index = (current_player_index - 1) % 4
-          expect(json['game_data']['players'][previous_player_index]['hand'].size).to eq(5)
+            # the prospector's privilege is to draw a card
+            # so the player should have 1 more card in hand
+            # current_player_index = json['game_data']['current_player_index']
+            # expect(json['game_data']['players'][current_player_index]['hand'].size).to eq(5)
+
+            # since the current player will turn to the next player, we should check the previous player's hand
+            current_player_index = json['game_data']['current_player_index']
+            previous_player_index = (current_player_index - 1) % 4
+            expect(json['game_data']['players'][previous_player_index]['hand'].size).to eq(5)
+          end
         end
       end
 

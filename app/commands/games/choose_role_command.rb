@@ -47,7 +47,14 @@ module Games
           ]
         end
       else
-        pp "Unimplemented role: #{role}"
+        # @post_action = [
+        #   UnimplementedCommand, {
+        #     message: "Unimplemented role: #{role}",
+        #     player_id: player.id,
+        #     description: "選擇職業(未實作)"
+        #   }
+        # ]
+        @post_action = [ Games::TurnOverCommand, { description: "選擇職業結束，換下一位玩家" } ]
       end
 
       self
@@ -87,7 +94,7 @@ module Games
     def find_role(value)
       return nil unless value
 
-      case value.to_s.downcase
+      case value.to_s.demodulize.downcase
       when "1", "建築師", "builder"
         Roles::Builder.to_s
       when "2", "製造商", "producer"

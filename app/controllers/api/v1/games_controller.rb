@@ -24,6 +24,9 @@ class Api::V1::GamesController < ApplicationController
   end
 
   def assign
+    # HACK: show the players is bot or not
+    pp @game.players.map { |player| player[:is_bot] ? "bot" : "human" }
+
     # TODO: assign role to the current player
     # - currently, we don't have a real player. Use a dummy player instead.
     @current_player ||= "dummy player"
@@ -39,11 +42,13 @@ class Api::V1::GamesController < ApplicationController
     end
 
     # resolve the rest of the action can be done automatically
-    result.resolve_post_action(game: @game)
+    # - variant: np: should automatically step to the next player? (0: false, else: true, default: true)
+    #            ex: POST /api/v1/games/1/roles/producer?np=0, will not step to the next player
+    result.resolve_post_action(game: @game, options: { np: params[:np] != "0" })
 
-    # notify the next player to take action
-    # TODO: implement this
-    @game.notify_next_turn
+    # # notify the next player to take action
+    # # TODO: implement this
+    # @game.notify_next_turn
 
     @message = "你選擇了: #{params[:role]}"
     render :show
