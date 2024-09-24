@@ -62,7 +62,7 @@ class Game < ApplicationRecord
   class << self
     def generate_seed = SecureRandom.hex(16)
 
-    def start_new_game(seed: nil, game: nil)
+    def start_new_game(seed: nil, game: nil, players: nil)
       game ||= new(status: :playing, phase: :choose_role)
 
       # 1. generate a random seed
@@ -70,7 +70,7 @@ class Game < ApplicationRecord
       game.save
 
       # 1.1. generate players and choose the first player
-      game.game_data[:players] = generate_players(seed: game.seed)
+      game.game_data[:players] = generate_players(seed: game.seed, players: players)
       game.game_data[:current_player_index] = 0
       game.save
 
@@ -136,13 +136,18 @@ class Game < ApplicationRecord
     end
 
     # FIXME: hardcode 4 players for now
-    def generate_players(seed: nil)
+    def generate_players(seed: nil, players: nil)
       srand(seed.to_i(16)) if seed
 
-      human_player = Player.new(1, [], [], nil, false)
-      bot_players = 3.times.map { |i| Player.new(i + 2, [], [], nil, true) }
+      if players
+        human_players = players.map { |player| Player.new(player, [], [], nil, false) }
+        bot_players = (4 - players.size).times.map { |i| Player.new("bot_#{i + 1}", [], [], nil, true) }
+      else
+        human_players = [ Player.new(1, [], [], nil, false) ]
+        bot_players = 3.times.map { |i| Player.new(i + 2, [], [], nil, true) }
+      end
 
-      ([ human_player ] + bot_players).shuffle
+      (human_players + bot_players).shuffle
     end
   end
 
