@@ -2,7 +2,7 @@ class Api::V1::GamesController < ApplicationController
   before_action :set_game, only: %i[restart assign show]
 
   def index
-    @games = Game.all
+    @games = Game.all.includes(:game_steps)
   end
 
   def show; end

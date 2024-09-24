@@ -20,7 +20,6 @@ module Games
       # 1.1. if blank, then the phase is over
       # 1.2. if not blank, then move to the next player
       if game.game_data["waiting_players"].blank?
-        # game.phase_over!
         @post_action = [ Games::PhaseOverCommand, { description: "#{game.phase} is over" } ]
         return self
       else

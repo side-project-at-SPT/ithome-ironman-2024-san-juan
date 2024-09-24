@@ -17,6 +17,7 @@ module Games
       players = game.players
       players.each { |player| player.role = nil }
       game.game_data["players"] = players
+      game.game_data["rounds"] += 1
       game.save
 
       # TODO: round number should be increased by 1

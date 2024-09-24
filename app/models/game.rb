@@ -107,6 +107,7 @@ class Game < ApplicationRecord
       game.game_data[:players] = players
       game.game_data[:supply_pile] = deck
       game.game_data[:roles] = roles
+      game.game_data[:rounds] = 1
       game.save
 
       game.generate_game_steps(reason: "game_init", description: "遊戲開始")
@@ -163,6 +164,10 @@ class Game < ApplicationRecord
     return nil unless game_data["players"]
 
     players[game_data["current_player_index"]]["id"]
+  end
+
+  def rounds
+    game_data["rounds"]
   end
 
   private

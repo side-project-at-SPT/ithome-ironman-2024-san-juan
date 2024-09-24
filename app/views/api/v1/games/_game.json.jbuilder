@@ -7,11 +7,13 @@ else
   json.game_config do
     json.seed game.seed
   end
+  json.game_steps game.game_steps.last.steps
   json.game_data do
+    json.rounds game.rounds
+    json.phase game.phase
     json.current_price game.current_price
     json.supply_pile game.game_data["supply_pile"]
     json.current_player_index game.game_data["current_player_index"]
-    json.phase game.phase
     json.roles game.game_data["roles"]
     json.players game.players do |player|
       json.id player.id

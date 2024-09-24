@@ -12,7 +12,7 @@ module Games
     end
 
     def call
-      game.generate_game_steps(reason: "turn_begin", description: "輪到 #{current_player.id} 了")
+      game.generate_game_steps(reason: "player_turn_begin", description: "輪到 #{current_player.id} 了")
       Rails.logger.debug { "TODO: notify next turn" }
       puts "\n  current phase: #{game.phase} \n\n"
       if game.choose_role_phase?

@@ -61,9 +61,9 @@ paths:
                   type: string
                   example: 1234567890abcdef
                   description: Optional
-  "/api/v1/games/{id}/play":
-    post:
-      summary: Play a game
+  "/api/v1/games/{id}":
+    get:
+      summary: Show a game
       tags:
       - Games
       parameters:
@@ -74,7 +74,7 @@ paths:
           type: integer
       responses:
         '200':
-          description: Game played
+          description: Game found
           content:
             application/json:
               schema:
@@ -84,22 +84,11 @@ paths:
                     type: integer
                   status:
                     type: string
-                  message:
-                    type: string
                 required:
                 - id
                 - status
-                - message
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                choice:
-                  type: string
-              required:
-              - choice
+        '404':
+          description: Game not found
   "/api/v1/games/{id}/roles/{role}":
     post:
       summary: Player chooses a role
@@ -113,9 +102,30 @@ paths:
           type: integer
       - name: role
         in: path
-        required: true
+        description: "Role to choose:\n * `builder` 建築師\n * `producer` 製造商\n * `trader`
+          貿易商\n * `prospector` 礦工\n * `councillor` 議員\n "
+        enum:
+          builder: 建築師
+          producer: 製造商
+          trader: 貿易商
+          prospector: 礦工
+          councillor: 議員
         schema:
           type: string
+          enum:
+          - builder
+          - producer
+          - trader
+          - prospector
+          - councillor
+        required: true
+      - name: np
+        in: query
+        description: Automatically move game state to the next player
+        schema:
+          type: string
+          example: '0'
+        required: false
       responses:
         '200':
           description: Choose a role successfully

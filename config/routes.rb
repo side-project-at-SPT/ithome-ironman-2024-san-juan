@@ -15,7 +15,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      resources :games, only: [ :index, :create ] do
+      resources :games, only: [ :index, :create, :show ] do
         member do
           post :restart
           scope :roles do

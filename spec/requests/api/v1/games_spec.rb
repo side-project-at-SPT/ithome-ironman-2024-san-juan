@@ -89,19 +89,67 @@ RSpec.describe "Api::V1::Games", type: :request do
     end
   end
 
+  path '/api/v1/games/{id}' do
+    get 'Show a game' do
+      tags 'Games'
+      produces 'application/json'
+
+      let(:game) { Game.start_new_game }
+      let(:id) { game.id }
+
+      parameter name: :id, in: :path, type: :integer, required: true
+
+      response '200', 'Game found' do
+        schema type: :object,
+          properties: {
+            id: { type: :integer },
+            status: { type: :string }
+          },
+          required: [ 'id', 'status' ]
+
+        run_test! do
+          json = JSON.parse(response.body)
+          expect(json['id']).to eq(id)
+          expect(json['status']).to eq('playing')
+        end
+      end
+
+      response '404', 'Game not found' do
+        let(:id) { 0 }
+
+        run_test!
+      end
+    end
+  end
+
   path '/api/v1/games/{id}/roles/{role}' do
     post 'Player chooses a role' do
       tags 'Games'
       consumes 'application/json'
       produces 'application/json'
 
-      let(:game) { Game.start_new_game }
+      let(:game) { Game.start_new_game(seed: '1234567890abcdef') }
       let(:id) { game.id }
       let(:role) { 'prospector' }
 
       parameter name: :id, in: :path, type: :integer, required: true
-      parameter name: :role, in: :path, type: :string, required: true
-      parameter name: :np, in: :query, type: :string, required: false
+      parameter name: :role,
+                in: :path,
+                description: 'Role to choose',
+                enum: Games::Roles::All.map(&:demodulize).map(&:downcase).zip(
+                  %w[建築師 製造商 貿易商 礦工 議員]
+                ).to_h,
+                schema: {
+                  type: :string,
+                  enum: Games::Roles::All.map(&:demodulize).map(&:downcase)
+                }, required: true
+      parameter name: :np,
+                in: :query,
+                description: 'Automatically move game state to the next player',
+                schema: {
+                  type: :string,
+                  example: '0'
+                }, required: false
 
       response '200', 'Choose a role successfully' do
         schema type: :object,

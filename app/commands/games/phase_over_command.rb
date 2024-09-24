@@ -12,7 +12,7 @@ module Games
     def call
       puts "=== #{game.phase} is over ==="
 
-      game.generate_game_steps(reason: "phase_over", description: "#{game.phase} 階段結束")
+      game.generate_game_steps(reason: "phase_end", description: "#{game.phase} 階段結束")
       # when phase is over,
       # 1. check if end_game condition is met
       # 2. if not, check if all players choose the role
