@@ -87,45 +87,24 @@ class LobbyChannel < ApplicationCable::Channel
     ActionCable.server.broadcast "lobby_channel", message
   end
 
+  # Deprecated
   def join_room(params)
-    room_key = params["room"]
-    room_participants = Kredis.set "room:#{room_key}:participants"
-    room_participants.add current_user.email
-    message = { message: "You have joined room #{room_key}" }
+    deprecated_notice = "This method is deprecated. Please use RoomChannel#subscribed instead."
+    message = { message: deprecated_notice }
     ActionCable.server.broadcast "lobby_channel", message
   end
 
+  # Deprecated
   def show_room_info(params)
-    room_key = params["room"]
-    room = Kredis.string "room:#{room_key}"
-    room_owner = Kredis.string "room:#{room_key}:owner"
-    room_participants = Kredis.set "room:#{room_key}:participants"
-    message = {
-      message: "Room #{room.value} info: owner - #{room_owner.value}, participants - #{room_participants.members.to_sentence}",
-      owner: room_owner.value,
-      participants: room_participants.members
-    }
+    deprecated_notice = "This method is deprecated. Please use RoomChannel#info instead."
+    message = { message: deprecated_notice }
     ActionCable.server.broadcast "lobby_channel", message
   end
 
+  # Deprecated
   def start_new_game(params)
-    room_key = params["room"]
-    room_owner = Kredis.string "room:#{room_key}:owner"
-
-    case room_owner.value
-    when nil
-      # room does not exist
-      message = { message: "Room #{room_key} does not exist" }
-      ActionCable.server.broadcast "lobby_channel", message
-    when current_user.email
-      # room owner
-      room_participants = Kredis.set "room:#{room_key}:participants"
-      game = Game.start_new_game(players: room_participants.members)
-      message = { message: "Game started in room #{room_key}", game_id: game.id }
-      ActionCable.server.broadcast "lobby_channel", message
-    else
-      message = { message: "Only the room owner can start the game" }
-      ActionCable.server.broadcast "lobby_channel", message
-    end
+    deprecated_notice = "This method is deprecated. Please use RoomChannel#play instead."
+    message = { message: deprecated_notice }
+    ActionCable.server.broadcast "lobby_channel", message
   end
 end
