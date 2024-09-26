@@ -17,6 +17,11 @@ Rails.application.routes.draw do
     namespace :v1 do
       post "login" => "sessions#create", as: :login
       post "logout" => "sessions#destroy", as: :logout
+      resources :rooms, only: [ :index, :show ] do
+        collection do
+          delete :all, action: :destroy_all
+        end
+      end
       resources :games, only: [ :index, :create, :show ] do
         member do
           post :restart

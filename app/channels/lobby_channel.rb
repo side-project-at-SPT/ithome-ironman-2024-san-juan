@@ -7,10 +7,28 @@ class LobbyChannel < ApplicationCable::Channel
 
   def unsubscribed
     # Any cleanup needed when channel is unsubscribed
+    message = { message: "Goodbye, #{current_user.email}!" }
+    ActionCable.server.broadcast "lobby_channel", message
+    stop_all_streams
   end
 
   def speak(data)
     ActionCable.server.broadcast "lobby_channel", message: data
+  end
+
+  def get_rooms
+    rooms = Room.all
+    message = {
+      rooms: rooms.map { |room|
+        {
+          id: room.id,
+          name: room.name,
+          owner: room.owner,
+          participants: room.participants
+        }
+      }
+    }
+    ActionCable.server.broadcast "lobby_channel", message
   end
 
   def create_room
@@ -21,15 +39,6 @@ class LobbyChannel < ApplicationCable::Channel
     room_participants = Kredis.set "#{room.key}:participants"
     room_participants.add current_user.email
     message = { message: "#{room.value} created!" }
-    ActionCable.server.broadcast "lobby_channel", message
-  end
-
-  def get_rooms
-    rooms = $redis.scan_each(match: "room:*").map do |room|
-      room_name = room.split(":")[1]
-      room_name
-    end
-    message = { rooms: rooms.uniq }
     ActionCable.server.broadcast "lobby_channel", message
   end
 

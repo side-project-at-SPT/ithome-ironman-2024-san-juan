@@ -4,6 +4,8 @@ class RoomChannel < ApplicationCable::Channel
 
     reject and return if @room_id.blank?
 
+    Room.find_or_create_by_id(@room_id, current_user.email)
+
     @channel = "room_#{@room_id}_channel"
     stream_from @channel
     data = { message: "#{current_user.email} has joined the room" }
@@ -16,10 +18,13 @@ class RoomChannel < ApplicationCable::Channel
   end
 
   # - 加入房間 subscribed
+  #   - 如果房間已在這個房間，則拒絕加入
+  #   - 如果已在其他房間，則拒絕加入
   # - 查詢房間有誰 info
   # - 開始遊戲 play
   # - 離開房間 unsubscribed
   # - 關閉房間 if invoker is room creator, then close room
+  # - 踢人 if invoker is room creator, then kick someone
 
   def info
     room = Kredis.string "room:#{@room_id}"
