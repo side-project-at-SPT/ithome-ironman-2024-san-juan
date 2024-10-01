@@ -63,7 +63,8 @@ class Game < ApplicationRecord
     def generate_seed = SecureRandom.hex(16)
 
     def start_new_game(seed: nil, game: nil, players: nil)
-      game ||= new(status: :playing, phase: :choose_role)
+      game ||= new(status: :playing)
+      game.phase = :choose_role
 
       # 1. generate a random seed
       game.seed = seed || SecureRandom.hex(16)
