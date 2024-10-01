@@ -12,7 +12,7 @@ module Games
 
     def initialize(params = {})
       @game = params.delete(:game)
-      @player = User.new(params.delete(:player_id))
+      @player = User.new(params.delete(:player_id), game&.id)
       @description = params.delete(:description)
       validate
 
@@ -61,7 +61,7 @@ module Games
       # errors.add(:player, "not your turn") unless game&.current_player_id == player&.id
 
       # NOTE: for now, we just assign the player to the current player
-      @player = User.new(game&.current_player_id)
+      @player = User.new(game&.current_player_id, game&.id)
     end
 
     def status_playing?
@@ -70,10 +70,16 @@ module Games
   end
 
   class User
-    attr_reader :id
+    attr_reader :id, :game_id
 
-    def initialize(id)
+    def initialize(id, game_id = nil)
       @id = id
+      @game_id = game_id
+    end
+
+    # @return [Array<Integer>] player's hand
+    def hand
+      Game.find(game_id).players.filter { |p| p["id"] == id }.first["hand"]
     end
   end
 end

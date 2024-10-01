@@ -1,5 +1,5 @@
 class Api::V1::GamesController < ApplicationController
-  before_action :set_game, only: %i[restart assign show]
+  before_action :set_game, only: %i[restart assign show roles]
 
   def index
     @games = Game.all.includes(:game_steps)
@@ -31,6 +31,9 @@ class Api::V1::GamesController < ApplicationController
     # - currently, we don't have a real player. Use a dummy player instead.
     @current_player ||= "dummy player"
 
+    # return if current phase is not choose_role
+    return render status: :bad_request, json: { error: "目前不是選擇職業的階段" } unless @game.choose_role_phase?
+
     command = @game.build_assign_role_command(role: params[:role], player: @current_player)
     if command.errors.any?
       return render status: :bad_request, json: { error: command.errors.full_messages }
@@ -51,6 +54,11 @@ class Api::V1::GamesController < ApplicationController
 
     @message = "你選擇了: #{params[:role]}"
     render :show
+  end
+
+  def roles
+    # return all available roles
+    render json: { roles: @game.game_data["roles"] }
   end
 
   private

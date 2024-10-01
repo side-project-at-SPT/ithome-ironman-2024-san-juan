@@ -51,6 +51,16 @@ module Games
             }
           ]
         end
+      when "councillor"
+        # 從牌庫抽取 2 張卡片，並選擇其中一張保留
+        # (特權: 多抽 3 張)
+        @post_action = [
+          Games::CouncillorPrivilegeCommand,
+          {
+            player_id: player.id,
+            description: "選擇議員玩家執行議員特權行動"
+          }
+        ]
       else
         @post_action = [ Games::TurnOverCommand, { description: "選擇職業結束，換下一位玩家" } ]
       end

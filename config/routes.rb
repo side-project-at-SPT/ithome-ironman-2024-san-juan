@@ -24,6 +24,7 @@ Rails.application.routes.draw do
       end
       resources :games, only: [ :index, :create, :show ] do
         member do
+          get :roles
           post :restart
           scope :roles do
             post ":role", action: :assign, as: :assign_role
