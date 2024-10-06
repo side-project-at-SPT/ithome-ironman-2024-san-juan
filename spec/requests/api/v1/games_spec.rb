@@ -183,6 +183,24 @@ RSpec.describe "Api::V1::Games", type: :request do
             expect(json['game_data']['players'][previous_player_index]['hand'].size).to eq(5)
           end
         end
+
+        context 'when choose ++councillor' do
+          let(:role) { 'councillor' }
+
+          run_test! do
+            json = JSON.parse(response.body)
+            expect(json['message']).to eq('你選擇了: councillor')
+            expect(json['game_data']['roles']).to match_array([
+              "Games::Roles::Builder",
+              "Games::Roles::Producer",
+              "Games::Roles::Trader",
+              "Games::Roles::Prospector"
+            ])
+            expect(json['game_data']['phase']).to eq('councillor')
+
+            pp json['game_data']['players'].map { |player| player['draw_cards'] }
+          end
+        end
       end
 
       response '400', 'Game is already finished' do

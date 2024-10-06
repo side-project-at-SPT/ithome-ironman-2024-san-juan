@@ -1,38 +1,47 @@
 module Games
-  class CouncillorPrivilegeCommand < PlayerCommand
+  class CouncillorKeepCommand < PlayerCommand
+    attr_reader :card_id
+
     def initialize(params = {})
+      @card_id = params[:card_id]
       super(params)
     end
 
     def call
-      privilege_description = "多抽取 3 張卡片"
+      privilege_description = "None"
 
-      # 圖書館 所有階段特權加倍
-      has_library = false
+      # 檔案室 議員階段可以從手牌棄牌
+      has_archive = false
 
       # 總督府 議員階段多保留 1 張卡片
       has_prefecture = false
 
       if Rails.env.test?
-        puts "[test]   CouncillorPrivilegeCommand called\tdescription: #{description}"
+        puts "[test]   CouncillorKeepCommand called\tdescription: #{description}"
       end
 
-      before_draw_hands = player.hand
-      before_draw_hand_count = before_draw_hands.count
+      # TODO: implement this <<
+
+      if has_archive
+        # check if the card_id is in the player's hand or in the draw cards
+        unless player.hand.include?(card_id) || player.draw_cards.include?(card_id)
+          raise "The card_id is not in the player's hand or in the draw cards"
+        end
+      else
+        # check if the card_id is in the player's hand
+        unless player.hand.include?(card_id)
+          raise "The card_id is not in the player's hand"
+        end
+      end
+
+
+
 
       number = 2 + 3 * (has_library ? 2 : 1)
       DrawCommand.new(game: game, player: player, number: number, description: "玩家 #{player.id} 抽了 #{number} 張卡片").call
 
       after_draw_hands = player.hand
       drew_cards = after_draw_hands.dup[before_draw_hand_count, number]
-
-      current_player_index = game.game_data["current_player_index"]
-      game.game_data["players"][current_player_index]["draw_cards"] = drew_cards
-      game.save
-
-      if Rails.env.test?
-        puts "[test]" + " " * 42 + "draw_cards: #{drew_cards.join(', ')}"
-      end
 
       Rails.logger.debug { "before_draw_hands: #{before_draw_hands}" }
       Rails.logger.debug { "after_draw_hands: #{after_draw_hands}" }

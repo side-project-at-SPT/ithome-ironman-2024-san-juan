@@ -24,8 +24,8 @@ class Api::V1::GamesController < ApplicationController
   end
 
   def assign
-    # HACK: show the players is bot or not
-    pp @game.players.map { |player| player[:is_bot] ? "bot" : "human" }
+    # # HACK: show the players is bot or not
+    # pp @game.players.map { |player| player[:is_bot] ? "bot" : "human" }
 
     # TODO: assign role to the current player
     # - currently, we don't have a real player. Use a dummy player instead.

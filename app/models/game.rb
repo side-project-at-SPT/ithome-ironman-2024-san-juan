@@ -24,12 +24,13 @@ class Game < ApplicationRecord
   end
 
   Building = Struct.new(:id, :good_id, :card_ids)
-  Player = Struct.new(:id, :hand, :buildings, :role, :is_bot) do
+  Player = Struct.new(:id, :hand, :buildings, :role, :is_bot, :draw_cards) do
     def to_json
       {
         id: id,
         is_bot: is_bot,
         hand: hand,
+        draw_cards: draw_cards,
         role: role,
         buildings: buildings
       }
@@ -55,8 +56,14 @@ class Game < ApplicationRecord
     self.game_data[:waiting_players] = [ 0, 1, 2, 3 ].rotate(game_data["current_player_index"])
     self.save
 
-    puts "\nPhase: #{phase} started"
-    puts "  #{game_data["waiting_players"][0]}'s turn begins"
+    if Rails.env.test?
+      puts "\n"
+      debug_messages = [
+        "Phase: #{phase} started",
+        "  #{game_data["waiting_players"][0]}'s turn begins"
+      ]
+      puts debug_messages.map { |msg| "[test] #{msg}" }.join("\n")
+    end
   end
 
   class << self
@@ -141,11 +148,11 @@ class Game < ApplicationRecord
       srand(seed.to_i(16)) if seed
 
       if players
-        human_players = players.map { |player| Player.new(player, [], [], nil, false) }
-        bot_players = (4 - players.size).times.map { |i| Player.new("bot_#{i + 1}", [], [], nil, true) }
+        human_players = players.map { |player| Player.new(player, [], [], nil, false, []) }
+        bot_players = (4 - players.size).times.map { |i| Player.new("bot_#{i + 1}", [], [], nil, true, []) }
       else
-        human_players = [ Player.new(1, [], [], nil, false) ]
-        bot_players = 3.times.map { |i| Player.new(i + 2, [], [], nil, true) }
+        human_players = [ Player.new(1, [], [], nil, false, []) ]
+        bot_players = 3.times.map { |i| Player.new(i + 2, [], [], nil, true, []) }
       end
 
       (human_players + bot_players).shuffle
@@ -162,7 +169,7 @@ class Game < ApplicationRecord
     game_data["players"].map do |player|
       Player.new(player["id"], player["hand"], player["buildings"].map { |building|
         Building.new(building["id"], building["good_id"], building["card_ids"])
-      }, player["role"], player["is_bot"])
+      }, player["role"], player["is_bot"], player["draw_cards"])
     end
   end
 
