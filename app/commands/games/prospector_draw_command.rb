@@ -8,7 +8,10 @@ module Games
     end
 
     def call
-      puts "Prospector Draw Command called"
+      if Rails.env.test?
+        puts "[test]   Prospector Draw Command called"
+      end
+
       DrawCommand.new(game: game, player: player, number: number).call
       game.generate_game_steps(
         reason: "prospector_action",

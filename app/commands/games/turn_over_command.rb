@@ -11,7 +11,11 @@ module Games
 
     def call
       c_player = game.game_data["waiting_players"].shift
-      puts "  #{c_player}'s turn is over"
+
+      if Rails.env.test?
+        puts "[test]   #{c_player}'s turn is over"
+      end
+
       game.save
 
       game.generate_game_steps(reason: "player_turn_end", description: "#{c_player} 的回合結束")

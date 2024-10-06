@@ -8,7 +8,10 @@ module Games
     end
 
     def call
-      puts "Draw Command called"
+      if Rails.env.test?
+        puts "[test]   Draw Command called\tnumber: #{number}\tdescription: #{description}"
+      end
+
       current_player_index = game.game_data["current_player_index"]
       draw = 0
       while draw < number

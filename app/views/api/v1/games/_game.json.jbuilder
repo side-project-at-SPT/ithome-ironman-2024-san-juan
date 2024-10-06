@@ -18,6 +18,7 @@ else
     json.players game.players do |player|
       json.id player.id
       json.hand player.hand
+      json.draw_cards player.draw_cards
       json.buildings player.buildings do |building|
         json.id building.id
         json.good_id building.good_id
