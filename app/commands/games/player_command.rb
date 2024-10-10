@@ -68,18 +68,4 @@ module Games
       errors.add(:status, "is not playing") unless game&.status_playing?
     end
   end
-
-  class User
-    attr_reader :id, :game_id
-
-    def initialize(id, game_id = nil)
-      @id = id
-      @game_id = game_id
-    end
-
-    # @return [Array<Integer>] player's hand
-    def hand
-      Game.find(game_id).players.filter { |p| p["id"] == id }.first["hand"]
-    end
-  end
 end

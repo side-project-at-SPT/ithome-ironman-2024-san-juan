@@ -19,4 +19,22 @@ module Games
   #   def prospector? = role.in? [ Roles::PROSPECTOR, "礦工", 4 ]
   #   def councillor? = role.in? [ Roles::COUNCILLOR, "議員", 5 ]
   # end
+
+  class User
+    attr_reader :id, :game_id
+
+    def initialize(id, game_id = nil)
+      @id = id
+      @game_id = game_id
+    end
+
+    # @return [Array<Integer>] player's hand
+    def hand
+      Game.find(game_id).players.filter { |p| p["id"] == id }.first["hand"]
+    end
+
+    def draw_cards
+      Game.find(game_id).players.filter { |p| p["id"] == id }.first["draw_cards"]
+    end
+  end
 end

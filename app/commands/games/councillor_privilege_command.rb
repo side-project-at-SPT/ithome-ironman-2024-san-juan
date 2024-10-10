@@ -42,10 +42,14 @@ module Games
         reason: "councillor_action",
         description: "玩家 #{player.id} 抽了 #{number} 張卡片"
       )
-      # @post_action = [ Games::CouncillorKeepCommand, { description: "玩家 #{player.id} 選擇保留一張卡片" } ]
-      # KeepCommand
 
-      # @post_action = [ Games::TurnOverCommand, { description: "礦工抽卡結束，換下一位玩家" } ]
+      @post_action = [
+        Games::CouncillorKeepCommand,
+        {
+          description: "mock, 議員保留卡片",
+          card_ids: drew_cards.sample(1)
+        }
+      ]
 
       self
     end

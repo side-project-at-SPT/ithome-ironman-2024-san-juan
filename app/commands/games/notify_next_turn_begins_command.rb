@@ -44,8 +44,13 @@ module Games
         end
       else
         # no-op
-        puts "  目前階段: #{game.phase} 仍未實作"
-        @post_action = [ Games::TurnOverCommand, { description: "換下一位玩家" } ]
+        # puts "  目前階段: #{game.phase} 仍未實作"
+        # @post_action = [ Games::TurnOverCommand, { description: "換下一位玩家" } ]
+        if Rails.env.test?
+          puts "[test]  " + "current phase: #{game.phase}"
+          puts "[test]  " + "current player: #{current_player.id}"
+          puts "[test]  目前階段: #{game.phase} 仍未實作"
+        end
       end
 
       self
