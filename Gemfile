@@ -39,7 +39,7 @@ end
 
 
 
-gem "rspec-rails", "~> 7.0"
+gem "rspec-rails", "~> 7.1"
 
 gem "rswag", "~> 2.15"
 
