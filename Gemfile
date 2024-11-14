@@ -41,6 +41,6 @@ end
 
 gem "rspec-rails", "~> 7.0"
 
-gem "rswag", "~> 2.15"
+gem "rswag", "~> 2.16"
 
 gem "jwt", "~> 2.9"
